@@ -24,8 +24,8 @@ class MCMCMediaEffectEstimate:
         with pm.Model(coords=coords) as model:
             x = pm.MutableData(name="x", value=x, dims="date")
             alpha = pm.Beta(name="alpha", alpha=1, beta=1)
-            lam = pm.Gamma(name="lam", alpha=3, beta=1)
-            x_coefficient = pm.HalfNormal(name="x_coefficient", sigma=1)
+            lam = pm.Gamma(name="lam", alpha=1, beta=1)
+            x_coefficient = pm.HalfNormal(name="x_coefficient", sigma=0.1)
             x_adstock = pm.Deterministic(
                 name="x_adstock",
                 var=MEM.geometric_adstock(
@@ -48,10 +48,10 @@ class MCMCMediaEffectEstimate:
                 ), dims="date"
             )
 
-            intercept = pm.HalfNormal(name="intercept", sigma=1)
-            k = pm.HalfNormal(name="k", sigma=0.5)
-            intercept_and_trend = pm.Deterministic(name="intercept_and_trend", var=intercept + pm.math.exp(-k * t_scaled), dims="date")
-            sigma = pm.HalfNormal(name="sigma", sigma=1)
+            intercept = pm.HalfNormal(name="intercept", sigma=0.03)
+            k = pm.HalfNormal(name="k", sigma=5)
+            intercept_and_trend = pm.Deterministic(name="intercept_and_trend", var=intercept + pm.math.exp(-k * (t_scaled - 0.1)), dims="date")
+            sigma = pm.HalfNormal(name="sigma", sigma=0.1)
             nu = pm.Gamma(name="nu", alpha=5, beta=2)
             mu = pm.Deterministic(
                 name="mu",

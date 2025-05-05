@@ -64,6 +64,38 @@ if __name__ == "__main__":
         nbinom.rvs(500, 0.5, size=25, random_state=46)
     ])
     fig = make_subplots(
+        rows=4, cols=1,
+        subplot_titles=(
+            "主要メディア観測値",
+            "主要メディア観測値(影響別積み上げ)",
+            "主要メディア観測値(他要因除き)",
+            "他メディアによる主要メディア観測値への効果"
+        )
+    )
+    fig.add_trace(
+        go.Scatter(x=tl, y=y_obs+other_media_effect, stackgroup='one', name="主要メディア観測値", mode='lines', line=dict(color='black')),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Scatter(x=tl, y=y_obs, stackgroup='one', name="主要メディア観測値(他要因除き)", fill='tonexty'),
+        row=2, col=1
+    )
+    fig.add_trace(
+        go.Scatter(x=tl, y=other_media_effect, stackgroup='one', name="他メディアによる主要メディア観測値への効果", fill='tonexty'),
+        row=2, col=1
+    )
+    fig.add_trace(
+        go.Scatter(x=tl, y=y_obs, mode='lines', name="主要メディア観測値(他要因除き)", line=dict(color='blue')),
+        row=3, col=1
+    )
+    fig.add_trace(
+        go.Scatter(x=tl, y=other_media_effect, mode='lines', name="他メディアによる主要メディア観測値への効果", line=dict(color='orange')),
+        row=4, col=1
+    )
+    fig.update_layout(height=1000, width=1200, title_text="主要メディア観測値")
+    fig.write_image('../data/create_data_graph.png')
+    fig.show()
+    fig = make_subplots(
         rows=5, cols=1,
         subplot_titles=(
             "主要メディア観測値",
@@ -101,6 +133,11 @@ if __name__ == "__main__":
         go.Scatter(x=tl, y=unobservable_media_obs_impact, mode='lines', name="観測不可メディア露出による主要メディア観測値への影響", line=dict(color='green')),
         row=5, col=1
     )
-    fig.update_layout(height=1000, width=1200)
-    fig.write_image('../data/create_data_graph.png')
+    fig.update_layout(height=1000, width=1200, title_text="主要メディア観測値(観測不可メディア含む)")
+    fig.write_image('../data/create_data_graph_include_unobservable_media_obs_impact.png')
     fig.show()
+    # データを保存
+    np.save('../data/tl.npy', tl)
+    np.save('../data/y_obs.npy', y_obs)
+    np.save('../data/other_media_obs.npy', other_media_obs)
+    np.save('../data/unobservable_media_obs_impact.npy', unobservable_media_obs_impact)

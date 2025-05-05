@@ -9,6 +9,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from util.metric_scaler import MetricScaler
 from util.mcmc_media_effect_estimate import MCMCMediaEffectEstimate
@@ -18,14 +19,12 @@ from util.models import EstimateModelInput, EstimateModelOutput
 %autoreload 2
 MS = MetricScaler()
 MCME = MCMCMediaEffectEstimate()
-# %%
 # 必要なデータをロード
 y_obs = np.load("../data/y_obs.npy")
 other_media_obs = np.load("../data/other_media_obs.npy")
 other_media_effect = np.load("../data/other_media_effect.npy")
 tl = np.load("../data/tl.npy")
 
-# %%
 y = y_obs + other_media_effect
 y_scaled, y_scaler = MS.max_abs_scaler(y)
 x_scaled, x_scaler = MS.max_abs_scaler(other_media_obs)
@@ -35,9 +34,39 @@ estimate_model_input = EstimateModelInput(
     x=x_scaled,
     t=tl,
 )
-# %%
 estimate_model_output = MCME.estimate(estimate_model_input)
+# 事前分布によるとりうる値の範囲を確認
+palette = "viridis_r"
+cmap = plt.get_cmap(palette)
+percs = np.linspace(51, 99, 100)
+colors = (percs - np.min(percs)) / (np.max(percs) - np.min(percs))
 
+fig, ax = plt.subplots()
+
+for i, p in enumerate(percs[::-1]):
+    upper = np.percentile(
+        estimate_model_output.prior_predictive.prior_predictive["likelihood"],
+        p,
+        axis=1
+    )
+    lower = np.percentile(
+        estimate_model_output.prior_predictive.prior_predictive["likelihood"],
+        100 - p,
+        axis=1
+    )
+    color_val = colors[i]
+    ax.fill_between(
+        x=tl,
+        y1=upper.flatten(),
+        y2=lower.flatten(),
+        color=cmap(color_val),
+        alpha=0.1
+    )
+sns.lineplot(x=tl, y=y_scaled, color="black", label="target(scaled)", ax=ax)
+ax.legend()
+ax.set(
+    title="Base Model - Prior Predictive Samples"
+)
 # %%
 pm.model_to_graphviz(estimate_model_output.model)
 # %%
@@ -70,7 +99,40 @@ ax.set(
     xscale="log"
 )
 # %%
-type(estimate_model_output.prior_predictive)
-type(estimate_model_output.posterior_predictive)
-# %%
-type(estimate_model_output.model)
+posterior_predictive_likelihood = az.extract(
+    data=estimate_model_output.posterior_predictive,
+    group='posterior_predictive',
+    var_names=["likelihood"],
+)
+posterior_predictive_likelihood_inv = y_scaler.inverse_transform(
+    X=posterior_predictive_likelihood
+)
+fig, ax = plt.subplots()
+for i, p in enumerate(percs[::-1]):
+    upper = np.percentile(posterior_predictive_likelihood_inv, p, axis=1)
+    lower = np.percentile(posterior_predictive_likelihood_inv, 100 - p, axis=1)
+    color_val = colors[i]
+    ax.fill_between(
+        x=tl,
+        y1=upper,
+        y2=lower,
+        color=cmap(color_val),
+        alpha=0.1
+    )
+
+sns.lineplot(
+    x=tl,
+    y=np.median(posterior_predictive_likelihood_inv, axis=1),
+    color="C2",
+    label="posterior predictive mean",
+    ax=ax
+)
+sns.lineplot(
+    x=tl,
+    y=y,
+    color="black",
+    label="target",
+    ax=ax
+)
+ax.legend(loc="upper left")
+ax.set(title="Base Model - Posterior Predictive Samples")

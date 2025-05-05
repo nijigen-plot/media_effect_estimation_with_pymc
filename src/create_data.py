@@ -140,4 +140,5 @@ if __name__ == "__main__":
     np.save('../data/tl.npy', tl)
     np.save('../data/y_obs.npy', y_obs)
     np.save('../data/other_media_obs.npy', other_media_obs)
+    np.save('../data/other_media_effect.npy', other_media_effect)
     np.save('../data/unobservable_media_obs_impact.npy', unobservable_media_obs_impact)

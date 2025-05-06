@@ -67,14 +67,13 @@ ax.legend()
 ax.set(
     title="Base Model - Prior Predictive Samples"
 )
-# %%
+# MCMCモデルの可視化
 pm.model_to_graphviz(estimate_model_output.model)
-# %%
+# 各パラメータ推定後の分布を確認
 az.summary(
     data=estimate_model_output.trace,
     var_names=["alpha", "lam", "x_coefficient", "intercept", "k", "sigma", "nu"],
 )
-# %%
 axes = az.plot_trace(
     data=estimate_model_output.trace,
     var_names=["alpha", "lam", "x_coefficient", "intercept", "k", "sigma", "nu"],
@@ -86,7 +85,6 @@ axes = az.plot_trace(
 )
 fig = axes[0][0].get_figure()
 fig.suptitle('Base Model - Trace')
-# %%
 fig, ax = plt.subplots(figsize=(8, 6))
 az.plot_forest(
     data=estimate_model_output.trace,
@@ -98,7 +96,7 @@ ax.set(
     title="Base Model: 94.0% HDI",
     xscale="log"
 )
-# %%
+# 主要指標予測結果の確認
 posterior_predictive_likelihood = az.extract(
     data=estimate_model_output.posterior_predictive,
     group='posterior_predictive',

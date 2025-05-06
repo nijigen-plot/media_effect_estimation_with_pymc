@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -10,6 +11,8 @@ from util.media_effect_model import MediaEffectModel
 from util.metric_scaler import MetricScaler
 from util.models import EstimateModelInput, EstimateModelOutput
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 MEM = MediaEffectModel()
 MS = MetricScaler()
 
@@ -23,9 +26,21 @@ class MCMCMediaEffectEstimate:
         coords = {"date": t}
         with pm.Model(coords=coords) as model:
             x = pm.MutableData(name="x", value=x, dims="date")
-            alpha = pm.Beta(name="alpha", alpha=1, beta=1)
-            lam = pm.Gamma(name="lam", alpha=2, beta=1)
-            x_coefficient = pm.HalfNormal(name="x_coefficient", sigma=0.1)
+            if 'alpha' in fixed_parameters:
+                logger.info("alpha key detected. alpha is not estimated.")
+                alpha = fixed_parameters['alpha']
+            else:
+                alpha = pm.Beta(name="alpha", alpha=1, beta=1)
+            if 'lam' in fixed_parameters:
+                logger.info("lam key detected. lam is not estimated.")
+                lam = fixed_parameters['lam']
+            else:
+                lam = pm.Gamma(name="lam", alpha=2, beta=1)
+            if 'x_coefficient' in fixed_parameters:
+                logger.info("x_coefficient key detected. x_coefficient is not estimated.")
+                x_coefficient = fixed_parameters['x_coefficient']
+            else:
+                x_coefficient = pm.HalfNormal(name="x_coefficient", sigma=0.1)
             x_adstock = pm.Deterministic(
                 name="x_adstock",
                 var=MEM.geometric_adstock(

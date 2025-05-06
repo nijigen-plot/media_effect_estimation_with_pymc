@@ -140,3 +140,41 @@ sns.lineplot(
 )
 ax.legend(loc="upper left")
 ax.set(title="Base Model - Posterior Predictive Samples")
+# 効果量分布の確認
+posterior_predictive_x_effect = az.extract(
+    data=estimate_model_output.trace,
+    group='posterior',
+    var_names=["x_effect"]
+)
+posterior_predictive_x_effect_inv = y_scaler.inverse_transform(
+    X=posterior_predictive_x_effect
+)
+fig, ax = plt.subplots()
+for i, p in enumerate(percs[::-1]):
+    upper = np.percentile(posterior_predictive_x_effect_inv, p, axis=1)
+    lower = np.percentile(posterior_predictive_x_effect_inv, 100 - p, axis=1)
+    color_val = colors[i]
+    ax.fill_between(
+        x=tl,
+        y1=upper,
+        y2=lower,
+        color=cmap(color_val),
+        alpha=0.1
+    )
+
+sns.lineplot(
+    x=tl,
+    y=np.median(posterior_predictive_x_effect_inv, axis=1),
+    color="C2",
+    label="posterior x_effect median",
+    ax=ax
+)
+sns.lineplot(
+    x=tl,
+    y=other_media_effect,
+    color="black",
+    label="target",
+    ax=ax
+)
+ax.legend(loc="upper left")
+ax.set(title="Base Model - Posterior x Effect Samples")

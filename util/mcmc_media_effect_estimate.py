@@ -50,7 +50,7 @@ class MCMCMediaEffectEstimate:
 
             intercept = pm.HalfNormal(name="intercept", sigma=0.03)
             k = pm.HalfNormal(name="k", sigma=5)
-            intercept_and_trend = pm.Deterministic(name="intercept_and_trend", var=intercept + pm.math.exp(-k * (t_scaled - 0.1)), dims="date")
+            intercept_and_trend = pm.Deterministic(name="intercept_and_trend", var=intercept + pm.math.exp(-k * (t_scaled - 0.08)), dims="date")
             sigma = pm.HalfNormal(name="sigma", sigma=0.1)
             nu = pm.Gamma(name="nu", alpha=5, beta=2)
             mu = pm.Deterministic(

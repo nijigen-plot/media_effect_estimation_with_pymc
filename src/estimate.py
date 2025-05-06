@@ -78,10 +78,10 @@ ax.set(
 # MCMCモデルの可視化
 pm.model_to_graphviz(estimate_model_output.model)
 # 各パラメータ推定後の分布を確認
-az.summary(
+print(az.summary(
     data=estimate_model_output.trace,
     var_names=estimated_target_parameters,
-)
+))
 axes = az.plot_trace(
     data=estimate_model_output.trace,
     var_names=estimated_target_parameters,

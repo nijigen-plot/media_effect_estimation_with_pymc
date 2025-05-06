@@ -2,6 +2,7 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from typing import Dict, List
 
 import pymc as pm
 import arviz as az
@@ -19,6 +20,9 @@ from util.models import EstimateModelInput, EstimateModelOutput
 %autoreload 2
 MS = MetricScaler()
 MCME = MCMCMediaEffectEstimate()
+def estimate_target_parameters(d: Dict) -> List:
+    params = ["alpha", "lam", "x_coefficient", "intercept", "k", "sigma", "nu"]
+    return [x for x in params if x not in d]
 # 必要なデータをロード
 y_obs = np.load("../data/y_obs.npy")
 other_media_obs = np.load("../data/other_media_obs.npy")
@@ -28,8 +32,10 @@ tl = np.load("../data/tl.npy")
 y = y_obs + other_media_effect
 y_scaled, y_scaler = MS.max_abs_scaler(y)
 x_scaled, x_scaler = MS.max_abs_scaler(other_media_obs)
+fixed_parameters = {"lam": 2} # alpha, lam, x_coefficientについて事前に値を決めたい場合ここに入れる
+estimated_target_parameters = estimate_target_parameters(fixed_parameters)
 estimate_model_input = EstimateModelInput(
-    fixed_parameters={},
+    fixed_parameters=fixed_parameters,
     y=y_scaled,
     x=x_scaled,
     t=tl,
@@ -72,11 +78,11 @@ pm.model_to_graphviz(estimate_model_output.model)
 # 各パラメータ推定後の分布を確認
 az.summary(
     data=estimate_model_output.trace,
-    var_names=["alpha", "lam", "x_coefficient", "intercept", "k", "sigma", "nu"],
+    var_names=estimated_target_parameters,
 )
 axes = az.plot_trace(
     data=estimate_model_output.trace,
-    var_names=["alpha", "lam", "x_coefficient", "intercept", "k", "sigma", "nu"],
+    var_names=estimated_target_parameters,
     compact=True,
     backend_kwargs={
         "figsize": (12, 9),
@@ -88,7 +94,7 @@ fig.suptitle('Base Model - Trace')
 fig, ax = plt.subplots(figsize=(8, 6))
 az.plot_forest(
     data=estimate_model_output.trace,
-    var_names=["alpha", "lam", "x_coefficient", "intercept", "k", "sigma", "nu"],
+    var_names=estimated_target_parameters,
     combined=True,
     ax=ax
 )

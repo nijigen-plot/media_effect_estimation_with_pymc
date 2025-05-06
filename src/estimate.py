@@ -27,9 +27,11 @@ def estimate_target_parameters(d: Dict) -> List:
 y_obs = np.load("../data/y_obs.npy")
 other_media_obs = np.load("../data/other_media_obs.npy")
 other_media_effect = np.load("../data/other_media_effect.npy")
+unobservable_media_obs_impact = np.load("../data/unobservable_media_obs_impact.npy")
 tl = np.load("../data/tl.npy")
 
 y = y_obs + other_media_effect
+# y = y_obs + other_media_effect + unobservable_media_obs_impact # 観測不可な要因による主要指標への影響を加えたい場合はこちらを使う
 y_scaled, y_scaler = MS.max_abs_scaler(y)
 x_scaled, x_scaler = MS.max_abs_scaler(other_media_obs)
 fixed_parameters = {"lam": 2} # alpha, lam, x_coefficientについて事前に値を決めたい場合ここに入れる

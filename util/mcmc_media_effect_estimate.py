@@ -24,7 +24,7 @@ class MCMCMediaEffectEstimate:
         with pm.Model(coords=coords) as model:
             x = pm.MutableData(name="x", value=x, dims="date")
             alpha = pm.Beta(name="alpha", alpha=1, beta=1)
-            lam = pm.Gamma(name="lam", alpha=1, beta=1)
+            lam = pm.Gamma(name="lam", alpha=2, beta=1)
             x_coefficient = pm.HalfNormal(name="x_coefficient", sigma=0.1)
             x_adstock = pm.Deterministic(
                 name="x_adstock",

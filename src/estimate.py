@@ -128,7 +128,7 @@ sns.lineplot(
     x=tl,
     y=np.median(posterior_predictive_likelihood_inv, axis=1),
     color="C2",
-    label="posterior predictive mean",
+    label="posterior predictive median",
     ax=ax
 )
 sns.lineplot(

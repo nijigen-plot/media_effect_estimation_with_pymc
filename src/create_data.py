@@ -33,10 +33,10 @@ if __name__ == "__main__":
     # mu, varから負の二項分布のパラメータを計算してサンプルを生成
     p = mu / var
     n = mu**2 / (var - mu)
-    # 主要メディアの観測値
+    # 主要指標の観測値
     y_obs = nbinom.rvs(n, p, random_state=46)
     scaled_y_obs, y_obs_scaler = MS.max_abs_scaler(y_obs)
-    # 他メディアの観測値
+    # 施策の観測値
     other_media_obs = np.concatenate([
         np.zeros(200),
         nbinom.rvs(30000, 0.5, size=3, random_state=46),
@@ -44,15 +44,15 @@ if __name__ == "__main__":
         nbinom.rvs(800, 0.5, size=96, random_state=46)
     ])
     scaled_other_media_obs, media_obs_scaler = MS.max_abs_scaler(other_media_obs)
-    # 他メディアによる主要メディア観測値への影響係数(真の値)
+    # 施策による主要指標観測値への影響係数
     alpha = 0.5 # ジオメトリックアドストック関数のパラメータ
     lam = 2.00 # ロジスティックサチュレーション関数のパラメータ
-    beta = 0.1 # 主要メディア観測値への影響変数
+    beta = 0.1 # 主要指標観測値への影響変数
     apply_geom_adstock = function([], MEM.geometric_adstock(scaled_other_media_obs, alpha))()
     apply_logistic_saturation = function([], MEM.logistic_saturation(apply_geom_adstock, lam))()
     apply_beta_media_coefficient = MEM.media_coefficient(apply_logistic_saturation, beta)
     other_media_effect = media_obs_scaler.inverse_transform(apply_beta_media_coefficient.reshape(-1, 1)).flatten()
-    # 未知(観測不可)のメディア露出による主要メディア観測値への影響
+    # 未知(観測不可)の要因による主要指標観測値への影響
     unobservable_media_obs_impact = np.concatenate([
         np.zeros(210),
         np.array([550,600,550]),
@@ -66,74 +66,74 @@ if __name__ == "__main__":
     fig = make_subplots(
         rows=4, cols=1,
         subplot_titles=(
-            "主要メディア観測値",
-            "主要メディア観測値(影響別積み上げ)",
-            "主要メディア観測値(他要因除き)",
-            "他メディアによる主要メディア観測値への効果"
+            "主要指標観測値",
+            "主要指標観測値(影響別積み上げ)",
+            "主要指標観測値(他要因除き)",
+            "施策による主要指標観測値への効果"
         )
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=y_obs+other_media_effect, stackgroup='one', name="主要メディア観測値", mode='lines', line=dict(color='black')),
+        go.Scatter(x=tl, y=y_obs+other_media_effect, stackgroup='one', name="主要指標観測値", mode='lines', line=dict(color='black')),
         row=1, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=y_obs, stackgroup='one', name="主要メディア観測値(他要因除き)", fill='tonexty'),
+        go.Scatter(x=tl, y=y_obs, stackgroup='one', name="主要指標観測値(他要因除き)", fill='tonexty'),
         row=2, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=other_media_effect, stackgroup='one', name="他メディアによる主要メディア観測値への効果", fill='tonexty'),
+        go.Scatter(x=tl, y=other_media_effect, stackgroup='one', name="施策による主要指標観測値への効果", fill='tonexty'),
         row=2, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=y_obs, mode='lines', name="主要メディア観測値(他要因除き)", line=dict(color='blue')),
+        go.Scatter(x=tl, y=y_obs, mode='lines', name="主要指標観測値(他要因除き)", line=dict(color='blue')),
         row=3, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=other_media_effect, mode='lines', name="他メディアによる主要メディア観測値への効果", line=dict(color='orange')),
+        go.Scatter(x=tl, y=other_media_effect, mode='lines', name="施策による主要指標観測値への効果", line=dict(color='orange')),
         row=4, col=1
     )
-    fig.update_layout(height=1000, width=1200, title_text="主要メディア観測値")
+    fig.update_layout(height=1000, width=1200, title_text="主要指標観測値")
     fig.write_image('../data/create_data_graph.png')
     fig.show()
     fig = make_subplots(
         rows=5, cols=1,
         subplot_titles=(
-            "主要メディア観測値",
-            "主要メディア観測値(影響別積み上げ)",
-            "主要メディア観測値(他要因除き)",
-            "他メディアによる主要メディア観測値への効果",
-            "観測不可メディア露出による主要メディア観測値への影響"
+            "主要指標観測値",
+            "主要指標観測値(影響別積み上げ)",
+            "主要指標観測値(他要因除き)",
+            "施策による主要指標観測値への効果",
+            "観測不可要因による主要指標観測値への影響"
         )
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=y_obs+other_media_effect+unobservable_media_obs_impact, stackgroup='one', name="主要メディア観測値", mode='lines', line=dict(color='black')),
+        go.Scatter(x=tl, y=y_obs+other_media_effect+unobservable_media_obs_impact, stackgroup='one', name="主要指標観測値", mode='lines', line=dict(color='black')),
         row=1, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=y_obs, stackgroup='one', name="主要メディア観測値(他要因除き)", fill='tonexty'),
+        go.Scatter(x=tl, y=y_obs, stackgroup='one', name="主要指標観測値(他要因除き)", fill='tonexty'),
         row=2, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=other_media_effect, stackgroup='one', name="他メディアによる主要メディア観測値への効果", fill='tonexty'),
+        go.Scatter(x=tl, y=other_media_effect, stackgroup='one', name="施策による主要指標観測値への効果", fill='tonexty'),
         row=2, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=unobservable_media_obs_impact, stackgroup='one', name="観測不可メディア露出による主要メディア観測値への影響", fill='tonexty'),
+        go.Scatter(x=tl, y=unobservable_media_obs_impact, stackgroup='one', name="観測不可要因による主要指標観測値への影響", fill='tonexty'),
         row=2, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=y_obs, mode='lines', name="主要メディア観測値(他要因除き)", line=dict(color='blue')),
+        go.Scatter(x=tl, y=y_obs, mode='lines', name="主要指標観測値(他要因除き)", line=dict(color='blue')),
         row=3, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=other_media_effect, mode='lines', name="他メディアによる主要メディア観測値への効果", line=dict(color='orange')),
+        go.Scatter(x=tl, y=other_media_effect, mode='lines', name="施策による主要指標観測値への効果", line=dict(color='orange')),
         row=4, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=unobservable_media_obs_impact, mode='lines', name="観測不可メディア露出による主要メディア観測値への影響", line=dict(color='green')),
+        go.Scatter(x=tl, y=unobservable_media_obs_impact, mode='lines', name="観測不可要因による主要指標観測値への影響", line=dict(color='green')),
         row=5, col=1
     )
-    fig.update_layout(height=1000, width=1200, title_text="主要メディア観測値(観測不可メディア含む)")
+    fig.update_layout(height=1000, width=1200, title_text="主要指標観測値(観測不可メディア含む)")
     fig.write_image('../data/create_data_graph_include_unobservable_media_obs_impact.png')
     fig.show()
     # データを保存

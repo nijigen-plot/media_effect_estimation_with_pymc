@@ -11,11 +11,14 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pytensor import function
 
 from util.metric_scaler import MetricScaler
 from util.mcmc_media_effect_estimate import MCMCMediaEffectEstimate
 from util.models import EstimateModelInput, EstimateModelOutput
+from util.media_effect_model import MediaEffectModel
 
+plt.rcParams['font.family'] = 'Noto Sans CJK JP'
 %load_ext autoreload
 %autoreload 2
 MS = MetricScaler()
@@ -180,3 +183,23 @@ sns.lineplot(
 )
 ax.legend(loc="upper left")
 ax.set(title="Base Model - Posterior x Effect Samples")
+
+# %%
+np.median(posterior_predictive_x_effect_inv, axis=1).sum() / other_media_obs.sum()
+# %%
+MEM = MediaEffectModel()
+alpha_mean = az.summary(
+    data=estimate_model_output.trace,
+    var_names=estimated_target_parameters,
+).loc['alpha', 'mean']
+example_obs = np.array([100, 0,0,0,0,0,0,0,0,0,0,0]).reshape(-1,1).flatten()
+fig, axes = plt.subplots(1,1, figsize=(8, 6))
+
+# 最初のグラフ
+adstocked_value = function([], MEM.geometric_adstock(example_obs, alpha=alpha_mean))()
+axes.bar(height=adstocked_value, x=range(1, len(adstocked_value)+1), label='Adstocked Effect')
+axes.bar(height=example_obs, x=range(1, len(adstocked_value)+1), label='Observed')
+axes.set_title(f'幾何的アドストック関数 残存効果 : alpha = {alpha_mean:.2f}')
+axes.set_xlabel('t')
+axes.set_ylabel('効果割合')
+axes.legend()

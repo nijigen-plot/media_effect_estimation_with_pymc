@@ -64,12 +64,13 @@ if __name__ == "__main__":
         nbinom.rvs(500, 0.5, size=25, random_state=46)
     ])
     fig = make_subplots(
-        rows=4, cols=1,
+        rows=5, cols=1,
         subplot_titles=(
             "主要指標観測値",
             "主要指標観測値(影響別積み上げ)",
             "主要指標観測値(他要因除き)",
-            "施策による主要指標観測値への効果"
+            "施策による主要指標観測値への効果",
+            "施策の観測値(主要指標とは値の単位が異なる)"
         )
     )
     fig.add_trace(
@@ -92,16 +93,21 @@ if __name__ == "__main__":
         go.Scatter(x=tl, y=other_media_effect, mode='lines', name="施策による主要指標観測値への効果", line=dict(color='orange')),
         row=4, col=1
     )
-    fig.update_layout(height=1000, width=1200, title_text="主要指標観測値")
+    fig.add_trace(
+        go.Scatter(x=tl, y=other_media_obs, mode='lines', name="施策による主要指標観測値への効果", line=dict(color='red')),
+        row=5, col=1
+    )
+    fig.update_layout(height=1200, width=1200, title_text="主要指標観測値")
     fig.write_image('../data/create_data_graph.png')
     fig.show()
     fig = make_subplots(
-        rows=5, cols=1,
+        rows=6, cols=1,
         subplot_titles=(
             "主要指標観測値",
             "主要指標観測値(影響別積み上げ)",
             "主要指標観測値(他要因除き)",
             "施策による主要指標観測値への効果",
+            "施策の観測値(主要指標とは値の単位が異なる)",
             "観測不可要因による主要指標観測値への影響"
         )
     )
@@ -130,10 +136,14 @@ if __name__ == "__main__":
         row=4, col=1
     )
     fig.add_trace(
-        go.Scatter(x=tl, y=unobservable_media_obs_impact, mode='lines', name="観測不可要因による主要指標観測値への影響", line=dict(color='green')),
+        go.Scatter(x=tl, y=other_media_obs, mode='lines', name="施策による主要指標観測値への効果", line=dict(color='red')),
         row=5, col=1
     )
-    fig.update_layout(height=1000, width=1200, title_text="主要指標観測値(観測不可メディア含む)")
+    fig.add_trace(
+        go.Scatter(x=tl, y=unobservable_media_obs_impact, mode='lines', name="観測不可要因による主要指標観測値への影響", line=dict(color='green')),
+        row=6, col=1
+    )
+    fig.update_layout(height=1400, width=1200, title_text="主要指標観測値(観測不可要因含む)")
     fig.write_image('../data/create_data_graph_include_unobservable_media_obs_impact.png')
     fig.show()
     # データを保存
